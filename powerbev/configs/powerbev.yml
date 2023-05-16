@@ -1,0 +1,29 @@
+# ------------------------------------------------------------------------
+# PowerBEV
+# Copyright (c) 2023 Peizheng Li. All Rights Reserved.
+# ------------------------------------------------------------------------
+# Modified from FIERY (https://github.com/wayveai/fiery)
+# Copyright (c) 2021 Wayve Technologies Limited. All Rights Reserved.
+# ------------------------------------------------------------------------
+
+TAG: 'powerbev'
+
+GPUS: [0, 1, 2, 3]
+
+BATCHSIZE: 2
+PRECISION: 16
+
+LIFT:
+  # Long
+  X_BOUND: [-50.0, 50.0, 0.5]  # Forward
+  Y_BOUND: [-50.0, 50.0, 0.5]  # Sides
+
+  # # Short
+  # X_BOUND: [-15.0, 15.0, 0.15]  # Forward
+  # Y_BOUND: [-15.0, 15.0, 0.15]  # Sides
+
+MODEL:
+  BN_MOMENTUM: 0.05
+
+N_WORKERS: 20
+VIS_INTERVAL: 100

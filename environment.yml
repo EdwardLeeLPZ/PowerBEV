@@ -1,0 +1,32 @@
+# ------------------------------------------------------------------------
+# PowerBEV
+# Copyright (c) 2023 Peizheng Li. All Rights Reserved.
+# ------------------------------------------------------------------------
+# Modified from FIERY (https://github.com/wayveai/fiery)
+# Copyright (c) 2021 Wayve Technologies Limited. All Rights Reserved.
+# ------------------------------------------------------------------------
+
+name: powerbev
+channels:
+  - defaults
+  - conda-forge
+  - pytorch
+dependencies:
+- python=3.7.10
+- pytorch=1.7.0
+- torchvision=0.8.1
+- cudatoolkit=10.1
+- numpy=1.19.2
+- scipy=1.5.2
+- pillow=8.0.1
+- tqdm=4.50.2
+- pytorch-lightning=1.2.5
+- efficientnet-pytorch=0.7.0
+- fvcore=0.1.2.post20201122
+- pip=21.0.1
+- pip:
+    - nuscenes-devkit==1.1.0
+    - lyft-dataset-sdk==0.0.8
+    - opencv-python==4.5.1.48
+    - moviepy==1.0.3
+    - thop==0.1.1-2209072238

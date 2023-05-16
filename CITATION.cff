@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Li"
+  given-names: "Peizheng"
+  orcid: "https://orcid.org/0000-0003-2140-4357"
+title: "PowerBEV: A Powerful yet Lightweight Framework for Instance Prediction in Bird's-Eye View"
+date-released: 2023-05-03
+url: "https://github.com/EdwardLeeLPZ/PowerBEV"
