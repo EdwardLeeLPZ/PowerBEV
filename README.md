@@ -1,7 +1,7 @@
 # PowerBEV
 This is the official PyTorch implementation of the paper: 
-> **PowerBEV: A Powerful yet Lightweight Framework for Instance Prediction in Bird's-Eye View**  
-> [Peizheng Li](https://orcid.org/0000-0003-2140-4357), [Shuxiao Ding](https://scholar.google.com/citations?user=QPLytlUAAAAJ&hl=en&oi=ao), [Xieyuanli Chen](https://scholar.google.com/citations?user=DvrngV4AAAAJ&hl=en&oi=ao), [Niklas Hanselmann](https://scholar.google.com/citations?user=hm2FFlsAAAAJ&hl=en&oi=ao), [Marius Cordts](https://scholar.google.com/citations?user=RM0ik8wAAAAJ&hl=en&oi=ao), [Jürgen Gall](https://scholar.google.com/citations?user=1CLaPMEAAAAJ&hl=en&oi=ao)
+> [**PowerBEV: A Powerful yet Lightweight Framework for Instance Prediction in Bird's-Eye View**](https://www.ijcai.org/proceedings/2023/0120.pdf)  
+> [Peizheng Li](https://edwardleelpz.github.io/), [Shuxiao Ding](https://scholar.google.com/citations?user=QPLytlUAAAAJ&hl=en&oi=ao), [Xieyuanli Chen](https://xieyuanli-chen.com/), [Niklas Hanselmann](https://lasnik.github.io/), [Marius Cordts](https://scholar.google.com/citations?user=RM0ik8wAAAAJ&hl=en&oi=ao), [Jürgen Gall](https://scholar.google.com/citations?user=1CLaPMEAAAAJ&hl=en&oi=ao)
 
 ![](.github/demo.jpg)
 
@@ -104,13 +104,28 @@ PowerBEV is released under the MIT license. Please see the [LICENSE](LICENSE) fi
 
 ## 🔗 Citation
 ```
-@inproceedings{li2023powerbev,
-    title={PowerBEV: A Powerful yet Lightweight Framework for Instance Prediction in Bird's-Eye View},
-    author={Li, Peizheng and Ding, Shuxiao and Chen, Xieyuanli and Hanselmann, Niklas and Cordts, Marius and Gall, Jürgen},
-    journal={IJCAI 2023},
-    year={2023}
+@article{li2023powerbev,
+  title={PowerBEV: A Powerful Yet Lightweight Framework for Instance Prediction in Bird's-Eye View},
+  author={Li, Peizheng and Ding, Shuxiao and Chen, Xieyuanli and Hanselmann, Niklas and Cordts, Marius and Gall, Juergen},
+  journal={arXiv preprint arXiv:2306.10761},
+  year={2023}
+}
+@inproceedings{ijcai2023p120,
+  title     = {PowerBEV: A Powerful Yet Lightweight Framework for Instance Prediction in Bird’s-Eye View},
+  author    = {Li, Peizheng and Ding, Shuxiao and Chen, Xieyuanli and Hanselmann, Niklas and Cordts, Marius and Gall, Juergen},
+  booktitle = {Proceedings of the Thirty-Second International Joint Conference on
+               Artificial Intelligence, {IJCAI-23}},
+  publisher = {International Joint Conferences on Artificial Intelligence Organization},
+  editor    = {Edith Elkind},
+  pages     = {1080--1088},
+  year      = {2023},
+  month     = {8},
+  note      = {Main Track},
+  doi       = {10.24963/ijcai.2023/120},
+  url       = {https://doi.org/10.24963/ijcai.2023/120},
 }
 ```
 
 ## 📰 News
-PowerBEV has been accepted by [the 32nd International Joint Conference on Artificial Intelligence](https://ijcai-23.org/). The link and citation of the paper will be updated after the conference.
+- PowerBEV has been accepted by [the 32nd International Joint Conference on Artificial Intelligence](https://ijcai-23.org/).
+- PowerBEV has been included in [ROAD++: The Second Workshop & Challenge on Event Detection for Situation Awareness in Autonomous Driving](https://sites.google.com/view/road-plus-plus/home) @ [ICCV 2023](https://iccv2023.thecvf.com/).
