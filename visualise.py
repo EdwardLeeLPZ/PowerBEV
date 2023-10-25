@@ -20,7 +20,7 @@ from PIL import Image
 from powerbev.config import get_cfg, get_parser
 from powerbev.data import prepare_powerbev_dataloaders
 from powerbev.trainer import TrainingModule
-from powerbev.utils.instance import predict_instance_segmentation
+from powerbev.utils.instance import predict_instance_segmentation, generate_gt_instance_segmentation
 from powerbev.utils.network import NormalizeInverse
 from powerbev.utils.visualisation import (convert_figure_numpy,
                                           generate_instance_colours,
@@ -28,10 +28,16 @@ from powerbev.utils.visualisation import (convert_figure_numpy,
 
 
 def plot_prediction(image, output, cfg):
-    # Process predictions
-    consistent_instance_seg, matched_centers = predict_instance_segmentation(
-        output, compute_matched_centers=True, spatial_extent=(cfg.LIFT.X_BOUND[1], cfg.LIFT.Y_BOUND[1])
-    )
+    if cfg.VISUALIZATION.VIS_GT:
+        # Process ground truth
+        consistent_instance_seg, matched_centers = generate_gt_instance_segmentation(
+            output, compute_matched_centers=True, spatial_extent=(cfg.LIFT.X_BOUND[1], cfg.LIFT.Y_BOUND[1])
+        )
+    else:
+        # Process predictions
+        consistent_instance_seg, matched_centers = predict_instance_segmentation(
+            output, compute_matched_centers=True, spatial_extent=(cfg.LIFT.X_BOUND[1], cfg.LIFT.Y_BOUND[1])
+        )
     first_instance_seg = consistent_instance_seg[0, 1]
 
     # Plot future trajectories
@@ -110,16 +116,30 @@ def visualise():
     trainer.eval()
 
     for i, batch in enumerate(valloader):
-        image = batch['image'].to(device)
-        intrinsics = batch['intrinsics'].to(device)
-        extrinsics = batch['extrinsics'].to(device)
-        future_egomotions = batch['future_egomotion'].to(device)
+        if cfg.VISUALIZATION.VIS_GT:
+            # Visualize ground truth
+            image = batch['image'].to(device)
+            time_range = cfg.TIME_RECEPTIVE_FIELD - 2
+            output = {
+                'segmentation': batch['segmentation'][:, time_range:].to(device),
+                'instance_flow': batch['flow'][:, time_range:].to(device),
+                'centerness': batch['centerness'][:, time_range:].to(device),
+            }
 
-        # Forward pass
-        with torch.no_grad():
-            output = trainer.model(image, intrinsics, extrinsics, future_egomotions)
+            figure_numpy = plot_prediction(image, output, cfg)
+        else:
+            # Visualize predictions
+            image = batch['image'].to(device)
+            intrinsics = batch['intrinsics'].to(device)
+            extrinsics = batch['extrinsics'].to(device)
+            future_egomotions = batch['future_egomotion'].to(device)
 
-        figure_numpy = plot_prediction(image, output, trainer.cfg)
+            # Forward pass
+            with torch.no_grad():
+                output = trainer.model(image, intrinsics, extrinsics, future_egomotions)
+            
+            figure_numpy = plot_prediction(image, output, cfg)
+        
         os.makedirs(os.path.join(cfg.VISUALIZATION.OUTPUT_PATH), exist_ok=True)
         output_filename = os.path.join(cfg.VISUALIZATION.OUTPUT_PATH, 'sample_'+str(i)) + '.png'
         Image.fromarray(figure_numpy).save(output_filename)

@@ -209,3 +209,60 @@ def predict_instance_segmentation(output, compute_matched_centers=False,  vehicl
         return consistent_instance_seg, matched_centers
 
     return consistent_instance_seg.long()
+
+
+def generate_gt_instance_segmentation(output, compute_matched_centers=False,  vehicles_id=1, spatial_extent=[50, 50]):
+    preds = output['segmentation']
+    foreground_masks = preds.squeeze(2) == vehicles_id
+    output['segmentation'] = output['segmentation'].float() + output['centerness'].float()
+
+    batch_size, seq_len = preds.shape[:2]
+    pred_inst = []
+    for b in range(batch_size):
+        pred_inst_batch = get_instance_segmentation_and_centers(
+            output['segmentation'][b, 0:1, 0].detach(),
+            output['instance_flow'][b, 1:2].detach(),
+            foreground_masks[b, 1:2].detach(),
+            nms_kernel_size=round(350/spatial_extent[0]),
+        )
+        pred_inst.append(pred_inst_batch)
+    pred_inst = torch.stack(pred_inst).squeeze(2)
+
+    if output['instance_flow'] is None:
+        print('Using zero flow because instance_future_output is None')
+        output['instance_flow'] = torch.zeros_like(output['instance_flow'])
+    consistent_instance_seg = []
+    for b in range(batch_size):
+        consistent_instance_seg.append(
+            make_instance_id_temporally_consecutive(
+                pred_inst[b:b+1],
+                preds[b:b+1, 1:],
+                output['instance_flow'][b:b+1, 1:].detach(),
+                )
+        )
+    consistent_instance_seg = torch.cat(consistent_instance_seg, dim=0)
+    consistent_instance_seg = torch.cat([torch.zeros_like(pred_inst), consistent_instance_seg], dim=1)
+
+    if compute_matched_centers:
+        assert batch_size == 1
+        # Generate trajectories
+        matched_centers = {}
+        _, seq_len, h, w = consistent_instance_seg.shape
+        grid = torch.stack(torch.meshgrid(
+            torch.arange(h, dtype=torch.float, device=preds.device),
+            torch.arange(w, dtype=torch.float, device=preds.device)
+        ))
+
+        for instance_id in torch.unique(consistent_instance_seg[0, 1])[1:].cpu().numpy():
+            for t in range(seq_len):
+                instance_mask = consistent_instance_seg[0, t] == instance_id
+                if instance_mask.sum() > 0:
+                    matched_centers[instance_id] = matched_centers.get(instance_id, []) + [
+                        grid[:, instance_mask].mean(dim=-1)]
+
+        for key, value in matched_centers.items():
+            matched_centers[key] = torch.stack(value).cpu().numpy()[:, ::-1]
+
+        return consistent_instance_seg, matched_centers
+
+    return consistent_instance_seg.long()

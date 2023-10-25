@@ -8,6 +8,7 @@ This is the official PyTorch implementation of the paper:
 ## 📃 Contents
 - [PowerBEV](#powerbev)
   - [📃 Contents](#-contents)
+  - [📰 News](#-news)
   - [⚙️ Setup](#️-setup)
   - [📁 Dataset](#-dataset)
   - [🔥 Pre-trained models](#-pre-trained-models)
@@ -17,7 +18,10 @@ This is the official PyTorch implementation of the paper:
     - [Visualisation](#visualisation)
   - [📜 License](#-license)
   - [🔗 Citation](#-citation)
-  - [📰 News](#-news)
+
+## 📰 News
+- PowerBEV has been accepted by [the 32nd International Joint Conference on Artificial Intelligence](https://ijcai-23.org/).
+- PowerBEV has been included in [ROAD++: The Second Workshop & Challenge on Event Detection for Situation Awareness in Autonomous Driving](https://sites.google.com/view/road-plus-plus/home) @ [ICCV 2023](https://iccv2023.thecvf.com/).
 
 ## ⚙️ Setup
 Create the [conda](https://docs.conda.io/en/latest/miniconda.html) environment by running 
@@ -69,7 +73,7 @@ python train.py --config powerbev/configs/powerbev.yml \
 
 Note: These will train the model on 4 GPUs, each with a batch of size 2. 
 
-To set your configs, run
+To set your configs, please run
 
 ```
 python train.py --config powerbev/configs/powerbev.yml \
@@ -95,9 +99,11 @@ Download trained weights ([`long`](https://drive.google.com/file/d/1P33nD6nt8Ijn
 ```
 python visualise.py --config powerbev/configs/powerbev.yml \
                 PRETRAINED.LOAD_WEIGHTS True \
-                PRETRAINED.PATH $YOUR_PRETRAINED_WEIGHTS_PATH
+                PRETRAINED.PATH $YOUR_PRETRAINED_WEIGHTS_PATH \
+                BATCHSIZE 1
 ```
 This will render predictions from the network and save them to an `visualization_outputs` folder.
+Note: To visualize Ground Truth, please add the config `VISUALIZATION.VIS_GT True` at the end of the command
 
 ## 📜 License
 PowerBEV is released under the MIT license. Please see the [LICENSE](LICENSE) file for more information.
@@ -105,10 +111,10 @@ PowerBEV is released under the MIT license. Please see the [LICENSE](LICENSE) fi
 ## 🔗 Citation
 ```
 @article{li2023powerbev,
-  title={PowerBEV: A Powerful Yet Lightweight Framework for Instance Prediction in Bird's-Eye View},
-  author={Li, Peizheng and Ding, Shuxiao and Chen, Xieyuanli and Hanselmann, Niklas and Cordts, Marius and Gall, Juergen},
-  journal={arXiv preprint arXiv:2306.10761},
-  year={2023}
+  title     = {PowerBEV: A Powerful Yet Lightweight Framework for Instance Prediction in Bird's-Eye View},
+  author    = {Li, Peizheng and Ding, Shuxiao and Chen, Xieyuanli and Hanselmann, Niklas and Cordts, Marius and Gall, Juergen},
+  journal   = {arXiv preprint arXiv:2306.10761},
+  year      = {2023}
 }
 @inproceedings{ijcai2023p120,
   title     = {PowerBEV: A Powerful Yet Lightweight Framework for Instance Prediction in Bird’s-Eye View},
@@ -125,7 +131,3 @@ PowerBEV is released under the MIT license. Please see the [LICENSE](LICENSE) fi
   url       = {https://doi.org/10.24963/ijcai.2023/120},
 }
 ```
-
-## 📰 News
-- PowerBEV has been accepted by [the 32nd International Joint Conference on Artificial Intelligence](https://ijcai-23.org/).
-- PowerBEV has been included in [ROAD++: The Second Workshop & Challenge on Event Detection for Situation Awareness in Autonomous Driving](https://sites.google.com/view/road-plus-plus/home) @ [ICCV 2023](https://iccv2023.thecvf.com/).

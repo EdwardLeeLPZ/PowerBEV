@@ -140,6 +140,7 @@ _C.GRAD_NORM_CLIP = 5
 _C.VISUALIZATION = CN()
 _C.VISUALIZATION.OUTPUT_PATH = './visualization_outputs'
 _C.VISUALIZATION.SAMPLE_NUMBER = 1000
+_C.VISUALIZATION.VIS_GT = False
 
 def get_parser():
     parser = argparse.ArgumentParser(description='PowerBEV training')
