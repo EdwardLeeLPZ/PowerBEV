@@ -1,14 +1,22 @@
 # ------------------------------------------------------------------------
 # PowerBEV
-# Copyright (c) 2023 Peizheng Li, Shuxiao Ding, Xieyuanli Chen, Niklas Hanselmann, Marius Cordts, Jürgen Gall. All Rights Reserved.
-# Licensed under the MIT License
+# Copyright (c) 2023 Peizheng Li. All Rights Reserved.
 # ------------------------------------------------------------------------
 # Modified from FIERY (https://github.com/wayveai/fiery)
 # Copyright (c) 2021 Wayve Technologies Limited. All Rights Reserved.
 # ------------------------------------------------------------------------
 
-_BASE_: '../literature/static_lss_setting.yml'
 TAG: 'powerbev_static'
+
+DATASET:
+  FILTER_INVISIBLE_VEHICLES: False
+
+GPUS: [0, 1, 2, 3]
+
+BATCHSIZE: 2
+
+TIME_RECEPTIVE_FIELD: 1
+N_FUTURE_FRAMES: 0
 
 LIFT:
   # Long
@@ -18,3 +26,19 @@ LIFT:
   # # Short
   # X_BOUND: [-15.0, 15.0, 0.15]  # Forward
   # Y_BOUND: [-15.0, 15.0, 0.15]  # Sides
+
+PROBABILISTIC:
+  ENABLED: False
+
+MODEL:
+  TEMPORAL_MODEL:
+    NAME: 'identity'
+    INPUT_EGOPOSE: False
+
+INSTANCE_FLOW:
+  ENABLED: False
+
+OPTIMIZER:
+  LR: 1e-3
+
+N_WORKERS: 20
