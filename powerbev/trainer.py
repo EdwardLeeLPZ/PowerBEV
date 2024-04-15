@@ -47,19 +47,22 @@ class TrainingModule(pl.LightningModule):
             top_k_ratio=self.cfg.SEMANTIC_SEG.TOP_K_RATIO,
             future_discount=self.cfg.FUTURE_DISCOUNT,
         )
-        self.losses_fn['instance_flow'] = SpatialRegressionLoss(
-            norm=1.5, 
-            future_discount=self.cfg.FUTURE_DISCOUNT, 
-            ignore_index=self.cfg.DATASET.IGNORE_INDEX,
-        )
+        if self.cfg.INSTANCE_FLOW.ENABLED:
+            self.losses_fn['instance_flow'] = SpatialRegressionLoss(
+                norm=1.5, 
+                future_discount=self.cfg.FUTURE_DISCOUNT, 
+                ignore_index=self.cfg.DATASET.IGNORE_INDEX,
+            )
 
         # Uncertainty weighting
         self.model.segmentation_weight = nn.Parameter(torch.tensor(0.0), requires_grad=True)
-        self.model.flow_weight = nn.Parameter(torch.tensor(0.0), requires_grad=True)
+        if self.cfg.INSTANCE_FLOW.ENABLED:
+            self.model.flow_weight = nn.Parameter(torch.tensor(0.0), requires_grad=True)
 
         # Metrics
         self.metric_iou_val = IntersectionOverUnion(self.n_classes)
-        self.metric_panoptic_val = PanopticMetric(n_classes=self.n_classes)
+        if self.cfg.INSTANCE_FLOW.ENABLED:
+            self.metric_panoptic_val = PanopticMetric(n_classes=self.n_classes)
 
         self.training_step_count = 0
 
@@ -90,12 +93,16 @@ class TrainingModule(pl.LightningModule):
         if not is_train:
             # Perform warping-based pixel-level association
             start_time = time.time()
-            pred_consistent_instance_seg = predict_instance_segmentation(output, spatial_extent=self.spatial_extent)
+            if self.cfg.INSTANCE_FLOW.ENABLED:
+                pred_consistent_instance_seg = predict_instance_segmentation(output, spatial_extent=self.spatial_extent)
             end_time = time.time()
 
             # Calculate metrics
-            self.metric_iou_val(torch.argmax(output['segmentation'].detach(), dim=2, keepdims=True)[:, 1:], labels['segmentation'][:, 1:])
-            self.metric_panoptic_val(pred_consistent_instance_seg[:, 1:], labels['instance'][:, 1:])
+            if self.cfg.INSTANCE_FLOW.ENABLED:
+                self.metric_iou_val(torch.argmax(output['segmentation'].detach(), dim=2, keepdims=True)[:, 1:], labels['segmentation'][:, 1:])
+                self.metric_panoptic_val(pred_consistent_instance_seg[:, 1:], labels['instance'][:, 1:])
+            else:
+                self.metric_iou_val(torch.argmax(output['segmentation'].detach(), dim=2, keepdims=True), labels['segmentation'])
         
             # Record run time
             self.perception_time.append(output['perception_time'])
@@ -114,12 +121,13 @@ class TrainingModule(pl.LightningModule):
         )
         loss[f'segmentation_uncertainty'] = 0.5 * self.model.segmentation_weight
 
-        flow_factor = 0.1 / (2*torch.exp(self.model.flow_weight))
-        loss['instance_flow'] = flow_factor * self.losses_fn['instance_flow'](
-            output['instance_flow'], 
-            labels['flow']
-        )
-        loss['flow_uncertainty'] = 0.5 * self.model.flow_weight
+        if self.cfg.INSTANCE_FLOW.ENABLED:
+            flow_factor = 0.1 / (2*torch.exp(self.model.flow_weight))
+            loss['instance_flow'] = flow_factor * self.losses_fn['instance_flow'](
+                output['instance_flow'], 
+                labels['flow']
+            )
+            loss['flow_uncertainty'] = 0.5 * self.model.flow_weight
     
         return loss
 
@@ -162,6 +170,9 @@ class TrainingModule(pl.LightningModule):
         return labels, future_distribution_inputs
 
     def visualise(self, labels, output, batch_idx, prefix='train'):
+        if not self.cfg.INSTANCE_FLOW.ENABLED:
+            return
+        
         visualisation_video = visualise_output(labels, output, self.cfg)
         name = f'{prefix}_outputs'
         if prefix == 'val':
@@ -205,19 +216,20 @@ class TrainingModule(pl.LightningModule):
                 self.logger.experiment.add_scalar('metrics/val_iou_' + key, value, global_step=self.training_step_count)
                 print(f"val_iou_{key}: {value}")
             self.metric_iou_val.reset()
+            
+            if self.cfg.INSTANCE_FLOW.ENABLED:
+                scores = self.metric_panoptic_val.compute()
 
-            scores = self.metric_panoptic_val.compute()
-
-            for key, value in scores.items():
-                for instance_name, score in zip(class_names, value):
-                    if instance_name != 'background':
-                        self.logger.experiment.add_scalar(f'metrics/val_{key}_{instance_name}', score.item(),
-                                                          global_step=self.training_step_count)
-                        print(f"val_{key}_{instance_name}: {score.item()}")
-                    # Log VPQ metric for the model checkpoint monitor 
-                    if key == 'pq' and instance_name == 'dynamic':
-                        self.log('vpq', score.item())
-            self.metric_panoptic_val.reset()
+                for key, value in scores.items():
+                    for instance_name, score in zip(class_names, value):
+                        if instance_name != 'background':
+                            self.logger.experiment.add_scalar(f'metrics/val_{key}_{instance_name}', score.item(),
+                                                            global_step=self.training_step_count)
+                            print(f"val_{key}_{instance_name}: {score.item()}")
+                        # Log VPQ metric for the model checkpoint monitor 
+                        if key == 'pq' and instance_name == 'dynamic':
+                            self.log('vpq', score.item())
+                self.metric_panoptic_val.reset()
 
             print("========================== Runtime ==========================")
             perception_time = sum(self.perception_time) / (len(self.perception_time) + 1e-8)
@@ -232,8 +244,9 @@ class TrainingModule(pl.LightningModule):
 
         self.logger.experiment.add_scalar('weights/segmentation_weight', 1 / (torch.exp(self.model.segmentation_weight)),
                                           global_step=self.training_step_count)
-        self.logger.experiment.add_scalar('weights/flow_weight', 1 / (2 * torch.exp(self.model.flow_weight)),
-                                          global_step=self.training_step_count)
+        if self.cfg.INSTANCE_FLOW.ENABLED:
+            self.logger.experiment.add_scalar('weights/flow_weight', 1 / (2 * torch.exp(self.model.flow_weight)),
+                                            global_step=self.training_step_count)
 
     def training_epoch_end(self, step_outputs):
         self.shared_epoch_end(step_outputs, True)

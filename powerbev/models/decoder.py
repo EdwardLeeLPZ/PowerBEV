@@ -35,19 +35,6 @@ class Decoder(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(shared_out_channels, n_classes, kernel_size=1, padding=0),
         )
-        self.instance_offset_head = nn.Sequential(
-            nn.Conv2d(shared_out_channels, shared_out_channels, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(shared_out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(shared_out_channels, 2, kernel_size=1, padding=0),
-        )
-        self.instance_center_head = nn.Sequential(
-            nn.Conv2d(shared_out_channels, shared_out_channels, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(shared_out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(shared_out_channels, 1, kernel_size=1, padding=0),
-            nn.Sigmoid(),
-        )
 
         if self.predict_future_flow:
             self.instance_future_head = nn.Sequential(
@@ -86,13 +73,9 @@ class Decoder(nn.Module):
         x = self.up1_skip(x, skip_x['1'])
 
         segmentation_output = self.segmentation_head(x)
-        instance_center_output = self.instance_center_head(x)
-        instance_offset_output = self.instance_offset_head(x)
         instance_future_output = self.instance_future_head(x) if self.predict_future_flow else None
         return {
             'segmentation': segmentation_output.view(b, s, *segmentation_output.shape[1:]),
-            'instance_center': instance_center_output.view(b, s, *instance_center_output.shape[1:]),
-            'instance_offset': instance_offset_output.view(b, s, *instance_offset_output.shape[1:]),
             'instance_flow': instance_future_output.view(b, s, *instance_future_output.shape[1:])
             if instance_future_output is not None else None,
         }

@@ -1,0 +1,20 @@
+# ------------------------------------------------------------------------
+# PowerBEV
+# Copyright (c) 2023 Peizheng Li, Shuxiao Ding, Xieyuanli Chen, Niklas Hanselmann, Marius Cordts, Jürgen Gall. All Rights Reserved.
+# Licensed under the MIT License
+# ------------------------------------------------------------------------
+# Modified from FIERY (https://github.com/wayveai/fiery)
+# Copyright (c) 2021 Wayve Technologies Limited. All Rights Reserved.
+# ------------------------------------------------------------------------
+
+_BASE_: '../literature/static_lss_setting.yml'
+TAG: 'powerbev_static'
+
+LIFT:
+  # Long
+  X_BOUND: [-50.0, 50.0, 0.5]  # Forward
+  Y_BOUND: [-50.0, 50.0, 0.5]  # Sides
+
+  # # Short
+  # X_BOUND: [-15.0, 15.0, 0.15]  # Forward
+  # Y_BOUND: [-15.0, 15.0, 0.15]  # Sides
